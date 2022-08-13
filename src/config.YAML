@@ -7,3 +7,6 @@ IMAGEPATH        : '/content/drive/MyDrive/Kaggle_TPS_0822/notebooks/images/'
 # Pandas init variables
 NCOLS            : 100
 NROWS            : 100
+
+# Seed
+SEED             : 69
