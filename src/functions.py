@@ -6,6 +6,8 @@ import ipywidgets as widget
 import random
 import os
 
+from sklearn.model_selection import cross_validate
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 plt.style.use('ggplot')
@@ -20,6 +22,52 @@ def set_seed(seed):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
+
+def get_feats(data):
+    """
+    takes a dataframe as an argument and returns lists of:
+    categorical, integer, continuous, null and not null columns
+    """
+    cat_feats = data.select_dtypes('object').columns
+    int_feats = data.select_dtypes('integer').columns
+    cont_feats = data.select_dtypes('float').columns
+    null_feats = [col for col in data.columns if data[col].isnull().sum() != 0]
+    no_nulls = [col for col in data.columns if col not in null_feats and col!='failure']
+    return cat_feats, int_feats, cont_feats, null_feats, no_nulls
+
+def get_products(df1, df2):
+    """
+    Concats train and test data and returns a dataframe for each product code
+    """
+    df = pd.concat([df1, df2], axis=0)
+    dfa = df[df['product_code'] == 'A']
+    dfb = df[df['product_code'] == 'B']
+    dfc = df[df['product_code'] == 'C']
+    dfd = df[df['product_code'] == 'D']
+    dfe = df[df['product_code'] == 'E']
+    dff = df[df['product_code'] == 'F']
+    dfg = df[df['product_code'] == 'G']
+    dfh = df[df['product_code'] == 'H']
+    dfi = df[df['product_code'] == 'I']
+    return dfa, dfb, dfc, dfd, dfe, dff, dfg, dfh, dfi
+
+def get_test_product(data):
+    """
+    takes the test dataset and returns a list of dataframes split by product code
+    """
+    dff = data[data['product_code'] == 'F']
+    dfg = data[data['product_code'] == 'G']
+    dfh = data[data['product_code'] == 'H']
+    dfi = data[data['product_code'] == 'I']
+    return dff, dfg, dfh, dfi
+
+def score(X, y, model, cv):
+     scoring=['roc_auc']
+     scores =cross_validate(model, X, y, scoring=scoring, cv=cv, return_train_score=True)
+     scores = pd.DataFrame(scores).T
+     return scores.assign(
+         mean=lambda x: x.mean(axis=1), 
+         std= lambda x: x.std(axis=1))
 
 def descriptive_info_test(data, dtype):
     """
